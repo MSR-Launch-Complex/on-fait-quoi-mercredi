@@ -85,10 +85,6 @@ a { color: var(--accent); }
   font-size: .9rem;
 }
 
-.card-commune::before {
-  content: " · ";
-}
-
 .card-facts {
   margin: 0;
   display: grid;

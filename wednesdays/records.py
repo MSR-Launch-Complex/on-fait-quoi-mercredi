@@ -51,6 +51,10 @@ def read(data_dir=paths.DATA):
     if failure:
         return None, [failure]
     problems += schema.check_tags_file(_relative(tags_path), tags)
+    if not isinstance(tags, dict):
+        # The schema has just said this is not a mapping. Everything below reads it as
+        # one, and a crash here would bury the problem it was about to print.
+        return None, problems
 
     organisers = {}
     for path, slug in _yaml_files(os.path.join(data_dir, "organisers")):
@@ -59,6 +63,8 @@ def read(data_dir=paths.DATA):
             problems.append(failure)
             continue
         problems += schema.check_organiser(_relative(path), slug, doc)
+        if not isinstance(doc, dict):
+            continue
         organisers[slug] = doc
 
     activities = []
@@ -68,6 +74,8 @@ def read(data_dir=paths.DATA):
             problems.append(failure)
             continue
         problems += schema.check_activity(_relative(path), slug, doc, tags, organisers)
+        if not isinstance(doc, dict):
+            continue
         doc["slug"] = slug
         activities.append(doc)
 
@@ -94,7 +102,10 @@ def _read_file(path):
     try:
         return load_yaml(path), None
     except YamlSubsetError as error:
-        return None, schema.Problem(_relative(path), "(yaml)", str(error).split(": ", 1)[-1])
+        # The reader knows which line it stopped on; a problem that names only the file
+        # sends the reader back to search for it.
+        field = "(yaml)" if error.lineno is None else "(yaml line %d)" % error.lineno
+        return None, schema.Problem(_relative(path), field, error.problem)
     except OSError as error:
         return None, schema.Problem(_relative(path), "(file)", error.strerror or str(error))
 

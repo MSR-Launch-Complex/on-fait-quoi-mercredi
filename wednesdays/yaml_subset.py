@@ -12,7 +12,9 @@ The subset, in full:
   - scalars: plain, 'single-quoted', "double-quoted" (\\\\, \\", \\n, \\t), integers,
     floats, true / false, null / ~
   - literal (`|`) and folded (`>`) block scalars, with the `-` chomping indicator
-  - `#` comments, where the `#` starts a line or follows a space
+  - `#` comments, where the `#` starts a line or follows a space, and outside a quoted
+    scalar. A quote quotes only where a scalar may start, so the apostrophe in a plain
+    `L'Ilot jeux` is text and the comment after it is still a comment
 
 Everything else in YAML - anchors, aliases, tags, flow mappings, multiple documents,
 tabs for indentation - is rejected by name rather than half-understood. tests/
@@ -31,7 +33,25 @@ BLOCK_SCALAR = re.compile(r"^([|>])(-?)$")
 
 
 class YamlSubsetError(ValueError):
-    """A file that is not in the subset, or not YAML at all."""
+    """A file that is not in the subset, or not YAML at all.
+
+    `problem`, `origin` and `lineno` are kept apart from the formatted message so that a
+    caller can report the line the reader stopped on instead of taking the message
+    apart again to find it. `lineno` is None when the problem is the file as a whole.
+    """
+
+    def __init__(self, problem, origin=None, lineno=None):
+        self.problem = problem
+        self.origin = origin
+        self.lineno = lineno
+        super(YamlSubsetError, self).__init__(self._message())
+
+    def _message(self):
+        if self.origin is None:
+            return self.problem
+        if self.lineno is None:
+            return "%s: %s" % (self.origin, self.problem)
+        return "%s:%d: %s" % (self.origin, self.lineno, self.problem)
 
 
 def load(path):
@@ -43,7 +63,7 @@ def load(path):
 def loads(text, origin="<string>"):
     lines = _Lines(text, origin)
     if lines.peek() is None:
-        raise YamlSubsetError("%s: file is empty" % origin)
+        raise YamlSubsetError("file is empty", origin)
     indent, _, lineno = lines.peek()
     if indent != 0:
         raise lines.error(lineno, "the file starts indented")
@@ -83,23 +103,46 @@ class _Lines:
         self.index += 1
 
     def error(self, lineno, problem):
-        return YamlSubsetError("%s:%d: %s" % (self.origin, lineno, problem))
+        return YamlSubsetError(problem, self.origin, lineno)
 
 
 def _strip_comment(line):
     """Drop a trailing comment. A `#` counts only at the start or after a space."""
     out = []
     quote = None
-    for i, char in enumerate(line):
-        if quote:
-            if char == quote:
-                quote = None
-        elif char in "\"'":
-            quote = char
-        elif char == "#" and (i == 0 or line[i - 1] in " \t"):
-            break
+    index = 0
+    while index < len(line):
+        char = line[index]
+        pair = line[index : index + 2]
+        if quote is None:
+            if char == "#" and (index == 0 or line[index - 1] in " \t"):
+                break
+            if char in "\"'" and _opens_scalar(line, index):
+                quote = char
+            out.append(char)
+            index += 1
+            continue
+        # Inside a quoted scalar `''` and `\"` are content, not the end of it.
+        if (quote == "'" and pair == "''") or (quote == '"' and char == "\\" and len(pair) == 2):
+            out.append(pair)
+            index += 2
+            continue
+        if char == quote:
+            quote = None
         out.append(char)
+        index += 1
     return "".join(out).rstrip()
+
+
+def _opens_scalar(text, index):
+    """True when the quote at `index` begins a quoted scalar rather than sitting inside one.
+
+    A quote opens a scalar only where a scalar can start. `L'Ilot jeux` is a plain scalar
+    holding an apostrophe, not an unterminated string: reading it as a quote left the
+    quote open for the rest of the line and swallowed any trailing ` # comment` into the
+    value, which is how a French apostrophe used to change what a card said.
+    """
+    return index == 0 or text[index - 1] in " \t,["
 
 
 def _parse_block(lines, indent):
@@ -286,12 +329,12 @@ def _parse_flow_sequence(lines, text, lineno):
 
 def _split_flow(lines, inner, lineno):
     pieces, current, quote = [], "", None
-    for char in inner:
+    for index, char in enumerate(inner):
         if quote:
             current += char
             if char == quote:
                 quote = None
-        elif char in "\"'":
+        elif char in "\"'" and _opens_scalar(inner, index):
             quote = char
             current += char
         elif char == ",":

@@ -38,6 +38,10 @@ PRICE_UNKNOWN = "non indiqué par la source"
 
 SOURCE_LINK = "la source"
 
+# Between the organiser and the commune on a card. It is text rather than a CSS
+# ::before, so the two names still read apart when the page is rendered unstyled.
+WHO_SEPARATOR = " · "
+
 
 def count(number):
     """`23 activités`, the results band of the design's §4."""

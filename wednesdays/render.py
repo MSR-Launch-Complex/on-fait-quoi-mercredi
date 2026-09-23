@@ -87,8 +87,12 @@ def _card(activity, dataset, icons):
             '<li class="card">',
             '<p class="card-kind">%s</p>' % _icon(kind, icons),
             "<h2>%s</h2>" % _escape(activity["title_fr"]),
-            '<p class="card-who">%s<span class="card-commune">%s</span></p>'
-            % (_escape(organiser["name"]), _escape(activity["commune"])),
+            '<p class="card-who">%s%s<span class="card-commune">%s</span></p>'
+            % (
+                _escape(organiser["name"]),
+                _escape(french.WHO_SEPARATOR),
+                _escape(activity["commune"]),
+            ),
             '<dl class="card-facts">',
             _fact(french.AGES_LABEL, french.ages(activity.get("ages")), "ages" in activity),
             _fact(french.MOMENT_LABEL, french.moments(activity.get("when")), "when" in activity),

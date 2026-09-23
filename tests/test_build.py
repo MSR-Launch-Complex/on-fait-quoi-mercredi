@@ -59,6 +59,11 @@ class BuiltPage(FixtureCase):
         self.assertIn("vérifié le 21/09/2026", card)
         self.assertIn(record["source_url"], card)
 
+    def test_the_organiser_and_the_commune_read_apart_without_the_stylesheet(self):
+        """The separator is in the markup, so stripping the styles does not join them."""
+        who = self._card(COMPLETE).split('<p class="card-who">')[1].split("</p>")[0]
+        self.assertEqual(re.sub(r"<[^>]+>", "", who), "MJC Fixture · Annecy")
+
     def test_a_card_says_when_the_source_did_not_say(self):
         card = self._card(SPARSE)
         self.assertIn("non précisé par la source", card)

@@ -7,10 +7,12 @@ checking that the complaint names the file and the field.
 
 from __future__ import annotations
 
+import contextlib
+import io
 import os
 import unittest
 
-from wednesdays import paths, records
+from wednesdays import paths, records, validate
 
 from .support import FixtureCase
 
@@ -138,7 +140,13 @@ class BrokenData(FixtureCase):
 
     def test_a_file_that_is_not_yaml_at_all(self):
         self.write(self.activity(COMPLETE), "just some prose, not a record\n")
-        self.assertRejected(COMPLETE, "(yaml)", "expected 'key: value'")
+        self.assertRejected(COMPLETE, "(yaml line 1)", "expected 'key: value'")
+
+    def test_a_parse_failure_names_the_line_it_stopped_on(self):
+        lines = self.read(self.activity(COMPLETE)).split("\n")
+        lines[8] = "\t" + lines[8].lstrip()
+        self.write(self.activity(COMPLETE), "\n".join(lines))
+        self.assertRejected(COMPLETE, "(yaml line 9)", "indented with a tab")
 
     def test_a_filename_that_does_not_start_with_its_organiser(self):
         os.rename(self.activity(COMPLETE), self.activity("autre-mjc--accueil--3-11"))
@@ -149,6 +157,29 @@ class BrokenData(FixtureCase):
             os.remove(os.path.join(self.data, "activities", name))
         problems = [str(problem) for problem in records.read(self.data)[1]]
         self.assertTrue(any("holds no activity files" in problem for problem in problems), problems)
+
+
+class TheValidatorReportsRatherThanCrashes(FixtureCase):
+    """A file of the wrong shape is a problem to print, not an exception to raise.
+
+    The schema says `expected a mapping`; the reading that follows used to hand the same
+    document on regardless and die on it, which turned a named problem into a traceback.
+    """
+
+    def test_a_tags_file_that_is_not_a_mapping(self):
+        self.write(os.path.join(self.data, "tags.yml"), "- kind\n- sport\n")
+        self.assertReported("tags.yml: (file): expected a mapping of tag groups")
+
+    def test_an_activity_file_whose_top_level_is_a_sequence(self):
+        self.write(self.activity(COMPLETE), "- un\n- deux\n")
+        self.assertReported("%s.yml: (file): expected a mapping of fields" % COMPLETE)
+
+    def assertReported(self, fragment):
+        stderr = io.StringIO()
+        with contextlib.redirect_stderr(stderr):
+            status = validate.main([self.data])
+        self.assertEqual(status, 1)
+        self.assertIn(fragment, stderr.getvalue())
 
 
 class Organisers(FixtureCase):

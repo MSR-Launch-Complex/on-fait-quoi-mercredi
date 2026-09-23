@@ -20,6 +20,15 @@ except ImportError:  # the build never needs it; the cross-check is skipped with
     pyyaml = None
 
 
+# Apostrophes and `#` in the same line: the combination that used to part company with
+# real YAML, kept where both the subset test and the PyYAML cross-check can reach it.
+TRICKY_LINES = (
+    "title_fr: Centre de loisirs L'Ilot jeux # la source écrit Ilot\n"
+    "notes_fr: 'l''école # dans la valeur' # hors de la valeur\n"
+    "tags: ['un # deux', trois] # hors de la valeur\n"
+)
+
+
 class ParsesTheSubset(unittest.TestCase):
     def test_mapping_of_scalars(self):
         doc = loads("title_fr: Les mercredis\nages: [3, 11]\ncount: 7\nok: true\nnone: null\n")
@@ -51,6 +60,17 @@ class ParsesTheSubset(unittest.TestCase):
     def test_comments_are_dropped_but_not_inside_quotes(self):
         doc = loads("# a comment\nkey: value # trailing\nurl: \"https://x.test/#anchor\"\n")
         self.assertEqual(doc, {"key": "value", "url": "https://x.test/#anchor"})
+
+    def test_an_apostrophe_does_not_hide_a_trailing_comment(self):
+        """A plain scalar may hold apostrophes: only a quote that starts a scalar quotes.
+
+        French names carry apostrophes, so a reader that treated `L'Ilot` as an open
+        quote kept the rest of the line - comment and all - as the value.
+        """
+        doc = loads(TRICKY_LINES)
+        self.assertEqual(doc["title_fr"], "Centre de loisirs L'Ilot jeux")
+        self.assertEqual(doc["notes_fr"], "l'école # dans la valeur")
+        self.assertEqual(doc["tags"], ["un # deux", "trois"])
 
     def test_block_scalars(self):
         doc = loads("literal: |\n  un\n  deux\nfolded: >-\n  un\n  deux\n")
@@ -107,6 +127,10 @@ class AgreesWithRealYaml(unittest.TestCase):
     that a date which is not a real date is reported by the schema, against its field,
     rather than by the parser. That is the one known difference, normalised here.
     """
+
+    def test_the_awkward_lines_parse_the_same(self):
+        """Written out here, so the cross-check does not rest on data/ holding the case."""
+        self.assertEqual(_as_text(pyyaml.safe_load(TRICKY_LINES)), loads(TRICKY_LINES))
 
     def test_every_data_file_parses_the_same(self):
         files = sorted(glob.glob(os.path.join(paths.DATA, "**", "*.yml"), recursive=True))
