@@ -17,9 +17,15 @@ The subset, in full:
     `L'Ilot jeux` is text and the comment after it is still a comment
 
 Everything else in YAML - anchors, aliases, tags, flow mappings, multiple documents,
-tabs for indentation - is rejected by name rather than half-understood. tests/
-cross-checks this reader against PyYAML over the real data files when PyYAML happens to
-be installed, which is how we know the subset means what YAML means.
+tabs for indentation - is rejected by name rather than half-understood.
+
+The scalar list above is the whole resolver, and it is deliberately smaller than YAML
+1.1's: `yes`, `On`, `NULL`, `.5`, `.inf` and `1_000` are text here and typed values in
+PyYAML, and a number written with a leading zero (`0600`) is refused rather than read as
+octal by one reader and decimal by the other. tests/ cross-checks this reader against
+PyYAML over the files we ship, when PyYAML happens to be installed; that tells us those
+files mean the same thing to both readers, which is not the same as the subset agreeing
+with YAML everywhere.
 """
 
 from __future__ import annotations
@@ -28,6 +34,7 @@ import re
 
 KEY = re.compile(r"^([A-Za-z_][A-Za-z0-9_]*):(?:\s+(.*))?$")
 INT = re.compile(r"^-?\d+$")
+LEADING_ZERO = re.compile(r"^-?0\d+$")
 FLOAT = re.compile(r"^-?\d+\.\d+$")
 BLOCK_SCALAR = re.compile(r"^([|>])(-?)$")
 
@@ -307,7 +314,7 @@ def _parse_scalar(lines, text, lineno):
         if not text.endswith("'") or len(text) < 2:
             raise lines.error(lineno, "unterminated single-quoted string")
         return text[1:-1].replace("''", "'")
-    return _plain(text)
+    return _plain(lines, text, lineno)
 
 
 def _parse_flow_sequence(lines, text, lineno):
@@ -367,13 +374,22 @@ def _unescape(lines, text, lineno):
     return out
 
 
-def _plain(text):
+def _plain(lines, text, lineno):
     if text in ("null", "~"):
         return None
     if text == "true":
         return True
     if text == "false":
         return False
+    if LEADING_ZERO.match(text):
+        # `phone: 0450276509` is a landline to whoever typed it, octal to YAML 1.1, and
+        # the decimal 450276509 to int(). No reading is safe, so refuse it by name and
+        # say what to type instead; the shipped phone numbers carry spaces and are text.
+        raise lines.error(
+            lineno,
+            "a number written with a leading zero is ambiguous (YAML 1.1 reads it as "
+            "octal): quote '%s' if it is text, or drop the zero if it is a number" % text,
+        )
     if INT.match(text):
         return int(text)
     if FLOAT.match(text):

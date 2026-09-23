@@ -80,6 +80,13 @@ class ParsesTheSubset(unittest.TestCase):
         """The schema, not the reader, decides whether a date is a real date."""
         self.assertEqual(loads("verified_on: 2026-09-23\n"), {"verified_on": "2026-09-23"})
 
+    def test_the_scalars_yaml_types_and_we_do_not(self):
+        """The resolver is smaller than YAML 1.1's on purpose; written out so it is checkable."""
+        doc = loads("a: yes\nb: On\nc: NULL\nd: .5\ne: .inf\nf: 1_000\n")
+        self.assertEqual(
+            doc, {"a": "yes", "b": "On", "c": "NULL", "d": ".5", "e": ".inf", "f": "1_000"}
+        )
+
 
 class RefusesTheRest(unittest.TestCase):
     def assertRefused(self, text, expected):
@@ -110,6 +117,13 @@ class RefusesTheRest(unittest.TestCase):
     def test_unterminated_quote(self):
         self.assertRefused('a: "oops\n', "unterminated")
 
+    def test_a_number_with_a_leading_zero(self):
+        self.assertRefused("phone: 0450276509\n", "leading zero")
+
+    def test_a_leading_zero_inside_a_flow_sequence(self):
+        """[010, 11] is eight to YAML and ten to int(); the schema would take either."""
+        self.assertRefused("ages: [010, 11]\n", "leading zero")
+
     def test_empty_file(self):
         self.assertRefused("\n# nothing\n", "empty")
 
@@ -121,12 +135,25 @@ class RefusesTheRest(unittest.TestCase):
 
 @unittest.skipIf(pyyaml is None, "PyYAML is not installed")
 class AgreesWithRealYaml(unittest.TestCase):
-    """Proof that the subset means what YAML means, over the files we actually ship.
+    """Proof that the files we actually ship mean the same thing to both readers.
 
     PyYAML resolves an unquoted 2026-09-23 to a date object; we keep dates as text so
     that a date which is not a real date is reported by the schema, against its field,
-    rather than by the parser. That is the one known difference, normalised here.
+    rather than by the parser. That is the only difference these files reach, and it is
+    normalised here. It is not a claim about YAML at large: the reader resolves plain
+    scalars with a smaller table than YAML 1.1's, which the two tests below pin.
     """
+
+    def test_where_the_two_readers_part(self):
+        """The divergence the module docstring names, so the docstring cannot quietly rot."""
+        divergent = "a: yes\nb: On\nc: NULL\nd: .5\ne: .inf\nf: 1_000\n"
+        self.assertNotEqual(pyyaml.safe_load(divergent), loads(divergent))
+
+    def test_a_leading_zero_is_refused_rather_than_read_two_ways(self):
+        """PyYAML reads 0600 as octal 384; we refuse it instead of picking a third answer."""
+        self.assertEqual(pyyaml.safe_load("k: 0600\n"), {"k": 384})
+        with self.assertRaises(YamlSubsetError):
+            loads("k: 0600\n")
 
     def test_the_awkward_lines_parse_the_same(self):
         """Written out here, so the cross-check does not rest on data/ holding the case."""

@@ -81,9 +81,11 @@ Groups of tags: `kind` (what it is, and the card icon), `rhythm` (how often), `s
 The files are read by `wednesdays/yaml_subset.py`, a reader for the part of YAML we use:
 block mappings and sequences, flow sequences of scalars, quoted and plain scalars, `|`
 and `>` blocks, `#` comments. Anchors, tags, flow mappings and multiple documents are
-refused by name. The build has no third-party imports so that it works offline on a
-clean checkout; `tests/test_yaml_subset.py` checks the reader against PyYAML over every
-shipped data file whenever PyYAML happens to be installed.
+refused by name, and so is a number written with a leading zero (`0450276509`), which
+YAML 1.1 reads as octal and `int()` reads as a different number again: quote it. The
+build has no third-party imports so that it works offline on a clean checkout;
+`tests/test_yaml_subset.py` checks the reader against PyYAML over every shipped data
+file whenever PyYAML happens to be installed.
 
 Dates stay text (`2026-09-23`) rather than becoming date objects, so that a date which is
 not a real date is reported against its field rather than as a parse error.
