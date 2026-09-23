@@ -6,3 +6,4 @@
 /.github/workflows/ @secretrobotron
 /.env @secretrobotron
 /secrets/ @secretrobotron
+/.github/CODEOWNERS @secretrobotron
