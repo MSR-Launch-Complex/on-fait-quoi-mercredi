@@ -15,3 +15,5 @@ max_parallel_agents: 2
 # E30 — the Bureau may choose its own work here (the switch is `hq delegate on`).
 delegation: auto
 design_doc: https://docs.google.com/document/d/104vcV_vHrxbj13zQUy3KmGxXgPZvRQTrLMiv57fcO0E/edit?usp=drivesdk
+
+# lock probe (to be closed unmerged)
