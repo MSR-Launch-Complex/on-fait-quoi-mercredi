@@ -88,6 +88,14 @@ class BrokenData(FixtureCase):
         self.edit(self.activity(COMPLETE), "source_last_seen: 2026-09-20", "source_last_seen: bientot")
         self.assertRejected(COMPLETE, "source_last_seen", "YYYY-MM-DD")
 
+    def test_a_date_that_is_a_real_day_but_not_zero_padded(self):
+        self.edit(self.activity(COMPLETE), "verified_on: 2026-09-21", "verified_on: 2026-9-3")
+        self.assertRejected(COMPLETE, "verified_on", "YYYY-MM-DD")
+
+    def test_a_date_that_int_would_read_but_a_reader_would_not(self):
+        self.edit(self.activity(COMPLETE), "verified_on: 2026-09-21", "verified_on: 2026-1_0-01")
+        self.assertRejected(COMPLETE, "verified_on", "YYYY-MM-DD")
+
     def test_an_organiser_with_no_file(self):
         os.remove(os.path.join(self.data, "organisers", "mjc-fixture.yml"))
         self.assertRejected(COMPLETE, "organiser", "no data/organisers/mjc-fixture.yml")
@@ -137,6 +145,16 @@ class BrokenData(FixtureCase):
             "    by: bureau\n    note_fr: plus tard\n  - date: 2026-09-21\n    kind: appel\n",
         )
         self.assertRejected(COMPLETE, "events[2].date", "oldest first")
+
+    def test_an_event_log_out_of_order_only_when_the_dates_are_padded(self):
+        """The order rule compares strings, so an unpadded date must not reach it."""
+        self.edit(
+            self.activity(COMPLETE),
+            "events:\n  - date: 2026-09-21\n    kind: appel\n",
+            "events:\n  - date: 2026-10-01\n    kind: appel\n"
+            "    by: bureau\n    note_fr: plus tard\n  - date: 2026-9-3\n    kind: appel\n",
+        )
+        self.assertRejected(COMPLETE, "events[2].date", "YYYY-MM-DD")
 
     def test_a_file_that_is_not_yaml_at_all(self):
         self.write(self.activity(COMPLETE), "just some prose, not a record\n")

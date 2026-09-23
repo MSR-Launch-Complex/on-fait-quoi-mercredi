@@ -17,6 +17,9 @@ SLUG = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*(?:--[a-z0-9]+(?:-[a-z0-9]+)*)*$")
 # Tags are snake_case (apres_midi, arts_plastiques); file slugs are hyphenated.
 TAG = re.compile(r"^[a-z0-9]+(?:_[a-z0-9]+)*$")
 URL = re.compile(r"^https?://\S+$")
+# Dates are stored zero-padded because the event log is ordered by comparing them as
+# strings; int() would happily read "2026-9-3" and that string sorts before "2026-10-01".
+DATE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 
 ACTIVITY_REQUIRED = (
     "title_fr",
@@ -262,11 +265,12 @@ def _when(path, doc):
 def _date(path, doc, field, value):
     if field not in doc:
         return []
-    if not isinstance(value, str):
+    if not isinstance(value, str) or not DATE.match(value):
         return [Problem(path, field, "expected a date as YYYY-MM-DD, found %r" % (value,))]
+    year, month, day = (int(part) for part in value.split("-"))
     try:
-        datetime.date(*(int(part) for part in value.split("-")))
-    except (ValueError, TypeError):
+        datetime.date(year, month, day)
+    except ValueError:
         return [Problem(path, field, "%r is not a real date (YYYY-MM-DD)" % (value,))]
     return []
 

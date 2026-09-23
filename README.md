@@ -72,4 +72,4 @@ Source: GitHub Actions**.
 | `wednesdays/` | the YAML reader, the schema, the renderer, the builder |
 | `bin/build`, `bin/validate` | the two entry points the Makefile calls |
 | `tests/` | run by `make test` |
-| `docs/` | the design, the record shape, the workflows waiting to be installed |
+| `docs/` | the design (`docs/design/DESIGN.md`) and the record shape (`docs/schema.md`) |
