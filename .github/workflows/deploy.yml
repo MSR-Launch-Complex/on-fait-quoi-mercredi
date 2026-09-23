@@ -1,8 +1,6 @@
 # Builds the site and publishes it to GitHub Pages on every push to main, so that a
 # merge is a publish and your laptop does not have to be awake for it (design §6).
 #
-# Install this file as .github/workflows/deploy.yml - see docs/ci/README.md.
-#
 # Before the first run, set Settings > Pages > Build and deployment > Source to
 # "GitHub Actions".
 

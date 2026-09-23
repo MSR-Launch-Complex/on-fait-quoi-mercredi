@@ -47,8 +47,10 @@ field the source does not give is left out, and the card says so.
 ## Publish it
 
 GitHub Actions builds and deploys to Pages on every push to `main`, so a merge is a
-publish. The two workflows are written but **not yet installed** - see
-[docs/ci/README.md](docs/ci/README.md) for the one command and the one setting.
+publish: [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) builds the site
+and [`.github/workflows/test.yml`](.github/workflows/test.yml) runs `make test` on every
+pull request. Once, before the first deploy: **Settings → Pages → Build and deployment →
+Source: GitHub Actions**.
 
 ## Before this is shared beyond people you know
 
@@ -56,8 +58,9 @@ publish. The two workflows are written but **not yet installed** - see
       carry has not been established, and nothing has been written for it. Confirm what
       is needed and put it in the footer before sharing the site outside the household
       (design §6, §8). Nothing on the site claims it today.
-- [ ] Install the two workflows in `docs/ci/` and switch GitHub Pages to the GitHub
-      Actions source, so that pull requests are tested and merges publish.
+- [ ] Switch GitHub Pages to the GitHub Actions source, so that merges publish. The
+      workflows are in `.github/workflows/`; the setting is the half that only a person
+      with repository access can do.
 
 ## Layout
 
