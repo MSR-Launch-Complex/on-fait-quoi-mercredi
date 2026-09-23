@@ -1,6 +1,7 @@
 # Bureau enrollment — planned with the Navigator (E30); the design is docs/design/DESIGN.md.
 project: on-fait-quoi-mercredi
 branch_prefix: bureau/
+test_command: make test
 
 allowed_remotes: [origin]
 allowed_repos: [MSR-Launch-Complex/on-fait-quoi-mercredi]
@@ -10,4 +11,7 @@ forbidden_paths: [.github/workflows, .env, secrets]
 landing: never
 faces: preferred
 max_parallel_agents: 2
+
+# E30 — the Bureau may choose its own work here (the switch is `hq delegate on`).
+delegation: auto
 design_doc: https://docs.google.com/document/d/104vcV_vHrxbj13zQUy3KmGxXgPZvRQTrLMiv57fcO0E/edit?usp=drivesdk
