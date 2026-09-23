@@ -5,7 +5,7 @@ test_command: make test
 
 allowed_remotes: [origin]
 allowed_repos: [MSR-Launch-Complex/on-fait-quoi-mercredi]
-forbidden_paths: [.github/workflows, .env, secrets]
+forbidden_paths: [.env, secrets]
 
 # Landing stays attended until the floor exists (slice 1) and Bobby flips it.
 landing: never
