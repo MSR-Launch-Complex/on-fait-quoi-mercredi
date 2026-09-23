@@ -1,0 +1,18 @@
+title_fr: Accueil de loisirs du mercredi
+organiser: mjc-fixture
+commune: Annecy
+ages: [3, 11]
+when: [matin, apres_midi, journee]
+tags: [accueil_de_loisirs, tous_les_mercredis, ecole]
+price_note: "De 6 € à 21 € selon le quotient familial."
+address: École Fixture, Annecy
+notes_fr: "Une fiche complète, pour vérifier que chaque champ arrive sur la carte."
+source_url: https://example.invalid/mjc/mercredis
+source_last_seen: 2026-09-20
+verified_on: 2026-09-21
+status: verified
+events:
+  - date: 2026-09-21
+    kind: appel
+    by: bureau
+    note_fr: "Appelé : il reste des places."

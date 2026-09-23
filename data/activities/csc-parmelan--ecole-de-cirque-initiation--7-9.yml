@@ -1,0 +1,13 @@
+# The page gives the day but not the hour, so there is no `when` here: the site says
+# "horaire non précisé" rather than inventing a morning or an afternoon.
+title_fr: Initiation aux arts du cirque 7-9 ans
+organiser: csc-parmelan
+commune: Annecy
+ages: [7, 9]
+tags: [cirque, centre_social]
+notes_fr: "Approche technique et créative des arts du cirque : jonglerie, aériens, acrobaties, équilibre sur objets, expression. Cours hebdomadaires d'1h30 de septembre à juin, les mercredis, jeudis ou vendredis, avec un spectacle de fin d'année fin juin. L'École de cirque du Parmelan est agréée par la Fédération Française des Écoles de cirque."
+source_url: https://www.cscparmelan.fr/ecole-de-cirque/
+source_last_seen: 2026-09-23
+verified_on: 2026-09-23
+status: verified
+events: []

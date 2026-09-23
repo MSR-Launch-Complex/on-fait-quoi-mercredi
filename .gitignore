@@ -1,0 +1,5 @@
+# The site is a build product: `make build` writes it, Actions deploys it.
+site/
+__pycache__/
+*.pyc
+.DS_Store

@@ -1,6 +1,7 @@
 # Bureau enrollment — planned with the Navigator (E30); the design is docs/design/DESIGN.md.
 project: on-fait-quoi-mercredi
 branch_prefix: bureau/
+test_command: make test
 
 allowed_remotes: [origin]
 allowed_repos: [MSR-Launch-Complex/on-fait-quoi-mercredi]

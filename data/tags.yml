@@ -1,0 +1,26 @@
+# The controlled list. A tag that is not in this file is rejected by `make test`, which
+# is what stops the crawler (slice 3) inventing vocabulary one page at a time.
+#
+# kind    what the activity is. Exactly one per activity; it chooses the card icon, so
+#         every kind here needs assets/icons/<kind>.svg.
+# rhythm  how often it happens.
+# setting where it happens.
+
+kind:
+  - accueil_de_loisirs
+  - cirque
+  - sport
+  - arts_plastiques
+  - musique
+  - danse
+  - theatre
+  - nature
+
+rhythm:
+  - tous_les_mercredis
+  - par_trimestre
+
+setting:
+  - ecole
+  - mjc
+  - centre_social

@@ -1,5 +1,72 @@
 # on-fait-quoi-mercredi
 
-A French static site listing Wednesday activities for ages 3-11 in the Annecy agglomeration, built from a daily crawl of a seed list of public sources.
+**On fait quoi mercredi ?** There is no school on Wednesday in France, so every family
+with young children has to fill the day, and the information about what is on offer
+around Annecy is scattered across a dozen websites, a season brochure in PDF and a
+municipal enrolment portal. This is a French static site that gathers it in one place:
+who runs it, for which ages, Wednesday morning or afternoon or all day, roughly what it
+costs, and a link to the organiser.
 
-The design, as accepted: [docs/design/DESIGN.md](docs/design/DESIGN.md). The work is the issues, in order; slice 1 lays the floor (build, test, deploy).
+Ages 3-11, the Annecy agglomeration, Wednesdays only. The design, as accepted:
+[docs/design/DESIGN.md](docs/design/DESIGN.md). The record shape:
+[docs/schema.md](docs/schema.md).
+
+## Where it is up to
+
+This is slice 1 of ten: the shape, a working site, and the tests. Ten activities are
+typed by hand from the sources listed in the intake inventory; nothing is crawled yet.
+The page is a list of cards and nothing else - the filters, the Wednesday grid, the map,
+the detail sheet and the correction form belong to later slices.
+
+## Build it
+
+```sh
+make build     # data/ + content/ -> site/index.html
+make serve     # the same, then http://localhost:8000
+```
+
+Python 3.9 or newer, and nothing else: no install step, no dependencies, no network. A
+clean clone builds the site offline.
+
+## Test it
+
+```sh
+make test      # schema validation over data/, then the reader and builder tests
+```
+
+`make test` is the single entry point and what `.bureau.yml` declares as `test_command`.
+It fails if any data file breaks the schema, and it names the file and the field.
+
+## Add or change an activity
+
+Write or edit a file in `data/activities/`, following
+[docs/schema.md](docs/schema.md), and run `make test`. If the activity's organiser is new,
+add `data/organisers/<slug>.yml` too. Enter only what the cited page actually states: a
+field the source does not give is left out, and the card says so.
+
+## Publish it
+
+GitHub Actions builds and deploys to Pages on every push to `main`, so a merge is a
+publish. The two workflows are written but **not yet installed** - see
+[docs/ci/README.md](docs/ci/README.md) for the one command and the one setting.
+
+## Before this is shared beyond people you know
+
+- [ ] **Mentions légales.** What a personal, non-commercial French site is required to
+      carry has not been established, and nothing has been written for it. Confirm what
+      is needed and put it in the footer before sharing the site outside the household
+      (design §6, §8). Nothing on the site claims it today.
+- [ ] Install the two workflows in `docs/ci/` and switch GitHub Pages to the GitHub
+      Actions source, so that pull requests are tested and merges publish.
+
+## Layout
+
+| Path | What it is |
+| :--- | :--- |
+| `data/activities/`, `data/organisers/`, `data/tags.yml` | the data; git is the database |
+| `content/about_fr.md` | the À propos text: the footer and the page description, one copy |
+| `assets/` | the stylesheet and one card icon per kind, both inlined into the page |
+| `wednesdays/` | the YAML reader, the schema, the renderer, the builder |
+| `bin/build`, `bin/validate` | the two entry points the Makefile calls |
+| `tests/` | run by `make test` |
+| `docs/` | the design, the record shape, the workflows waiting to be installed |

@@ -1,0 +1,141 @@
+/* Built for a phone first: one column at 375px, a second column only when there is
+   room for it. System fonts on purpose, so the page fetches nothing from anywhere. */
+
+:root {
+  --ink: #1d2330;
+  --muted: #5a6473;
+  --line: #dde2ea;
+  --paper: #fdfdfb;
+  --card: #ffffff;
+  --accent: #1f6f5c;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 0 1rem 3rem;
+  background: var(--paper);
+  color: var(--ink);
+  font: 1rem/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+a { color: var(--accent); }
+
+.site-header {
+  padding: 1.5rem 0 1rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.site-header h1 {
+  margin: 0 0 .35rem;
+  font-size: 1.6rem;
+  line-height: 1.2;
+}
+
+.site-blurb {
+  margin: 0;
+  color: var(--muted);
+}
+
+.count {
+  margin: 1.25rem 0 .75rem;
+  font-weight: 600;
+}
+
+.activities {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: .75rem;
+}
+
+.card {
+  position: relative;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: .6rem;
+  padding: .9rem 1rem 1rem;
+}
+
+.card h2 {
+  margin: 0 2.25rem .15rem 0;
+  font-size: 1.1rem;
+  line-height: 1.3;
+}
+
+.card-kind {
+  position: absolute;
+  top: .9rem;
+  right: 1rem;
+  margin: 0;
+  color: var(--accent);
+}
+
+.icon svg {
+  width: 1.6rem;
+  height: 1.6rem;
+  display: block;
+}
+
+.card-who {
+  margin: 0 0 .6rem;
+  color: var(--muted);
+  font-size: .9rem;
+}
+
+.card-commune::before {
+  content: " · ";
+}
+
+.card-facts {
+  margin: 0;
+  display: grid;
+  gap: .25rem;
+  font-size: .95rem;
+}
+
+.fact {
+  display: flex;
+  gap: .5rem;
+}
+
+.fact dt {
+  flex: 0 0 4.5rem;
+  color: var(--muted);
+}
+
+.fact dd {
+  margin: 0;
+}
+
+.fact-unknown dd {
+  color: var(--muted);
+  font-style: italic;
+}
+
+.card-verified {
+  margin: .7rem 0 0;
+  font-size: .8rem;
+  color: var(--muted);
+}
+
+.site-footer {
+  margin-top: 2.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: .9rem;
+}
+
+.site-footer h2 {
+  font-size: 1rem;
+  margin: 0 0 .5rem;
+  color: var(--ink);
+}
+
+@media (min-width: 46rem) {
+  body { padding: 0 2rem 4rem; max-width: 60rem; margin: 0 auto; }
+  .activities { grid-template-columns: 1fr 1fr; }
+}
