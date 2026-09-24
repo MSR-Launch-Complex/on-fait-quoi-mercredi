@@ -78,6 +78,13 @@ class BuiltPage(FixtureCase):
         self.assertIn("non indiqué par la source", card)
         self.assertEqual(card.count("fact-unknown"), 3)
 
+    def test_a_card_carries_the_latest_thing_we_learned(self):
+        """The fixture's log ends with a phone call; §4 puts it on the card as one line."""
+        self.assertIn("21/09 : Appelé : il reste des places.", self._card(COMPLETE))
+
+    def test_a_card_with_an_empty_log_says_nothing_instead(self):
+        self.assertNotIn("card-news", self._card(SPARSE))
+
     def test_the_about_text_is_in_the_footer_and_in_the_description(self):
         about = self.read(self.about).strip()
         self.assertIn("<footer", self.markup)
@@ -152,6 +159,25 @@ class RefusesToBuild(FixtureCase):
             icons_dir=paths.ICONS,
             stylesheet_path=paths.STYLESHEET,
         )
+
+
+class TheShippedSite(FixtureCase):
+    """Built from data/ itself, not from the fixtures: what a parent would actually read."""
+
+    def test_the_card_of_a_full_activity_says_it_is_full(self):
+        """Les Carrés' own page says complet for the season, and the record records it.
+        A card that showed it beside the open ones would be the site's worst failure."""
+        build.build(
+            data_dir=paths.DATA,
+            site_dir=self.site,
+            about_path=paths.ABOUT,
+            icons_dir=paths.ICONS,
+            stylesheet_path=paths.STYLESHEET,
+        )
+        markup = self.read(os.path.join(self.site, "index.html"))
+        card = [part for part in markup.split('<li class="card">') if "Les Loupiottes" in part]
+        self.assertEqual(len(card), 1, "expected one card for the Les Carrés record")
+        self.assertIn("complet pour la saison 2026-2027", card[0])
 
 
 class ShippedAssets(unittest.TestCase):

@@ -111,6 +111,16 @@ a { color: var(--accent); }
   font-style: italic;
 }
 
+/* The latest event. It carries availability - "complet pour la saison" - so it is set
+   apart from the facts above it rather than blending into them. */
+.card-news {
+  margin: .7rem 0 0;
+  padding: .4rem .6rem;
+  border-left: 3px solid var(--accent);
+  background: #f2f7f5;
+  font-size: .9rem;
+}
+
 .card-verified {
   margin: .7rem 0 0;
   font-size: .8rem;

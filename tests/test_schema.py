@@ -29,8 +29,9 @@ class TheShippedData(unittest.TestCase):
     def test_every_data_file_validates(self):
         self.assertEqual([str(problem) for problem in self.problems], [])
 
-    def test_ten_activities(self):
-        self.assertEqual(len(self.dataset.activities), 10)
+    def test_at_least_ten_activities(self):
+        """Ten is the floor this slice owes, not a ceiling the eleventh record breaks."""
+        self.assertGreaterEqual(len(self.dataset.activities), 10)
 
     def test_every_organiser_named_by_an_activity_has_a_record(self):
         for activity in self.dataset.activities:

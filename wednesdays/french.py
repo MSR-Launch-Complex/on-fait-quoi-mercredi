@@ -75,3 +75,14 @@ def date(iso):
 
 def verified_on(iso):
     return "vérifié le %s" % date(iso)
+
+
+def day_and_month(iso):
+    """2026-09-23 -> 23/09. The news line is about how recent a thing is, not which year."""
+    _, month, day = iso.split("-")
+    return "%s/%s" % (day, month)
+
+
+def latest_event(event):
+    """`23/09 : complet pour la saison` - the card's one line of news (design §4)."""
+    return "%s : %s" % (day_and_month(event["date"]), event["note_fr"])

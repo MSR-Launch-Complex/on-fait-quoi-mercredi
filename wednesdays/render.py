@@ -102,6 +102,9 @@ def _card(activity, dataset, icons):
                 "price_note" in activity,
             ),
             "</dl>",
+        ]
+        + _news(activity)
+        + [
             '<p class="card-verified">%s (<a href="%s">%s</a>)</p>'
             % (
                 _escape(french.verified_on(activity["verified_on"])),
@@ -111,6 +114,22 @@ def _card(activity, dataset, icons):
             "</li>",
         ]
     )
+
+
+def _news(activity):
+    """The latest thing we learned about this activity, as one line (design §4).
+
+    Availability is what this is for. Hardly any source states whether a place is free,
+    so the record claims nothing and what someone found out arrives as a dated event -
+    and a card that leaves that out shows a full activity among the open ones, which is
+    the one thing this site must not do. The log is stored oldest first, so the latest
+    event is the last. The rest of the log, and the staleness marks around it, are
+    slice 8's.
+    """
+    events = activity["events"]
+    if not events:
+        return []
+    return ['<p class="card-news">%s</p>' % _escape(french.latest_event(events[-1]))]
 
 
 def _fact(label, value, stated):
