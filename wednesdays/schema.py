@@ -265,6 +265,14 @@ def _when(path, doc):
 def _date(path, doc, field, value):
     if field not in doc:
         return []
+    if isinstance(value, (datetime.date, datetime.datetime)):
+        # An unquoted 2026-09-23 is a date object to PyYAML, and so is an unpadded
+        # 2026-9-3: the file stops saying which of the two it meant, and the event log
+        # is ordered by comparing these as text. So the data keeps them quoted.
+        return [
+            Problem(path, field, 'expected a date as YYYY-MM-DD text; an unquoted date is '
+                                 'read as a date object - write "%s"' % value.isoformat())
+        ]
     if not isinstance(value, str) or not DATE.match(value):
         return [Problem(path, field, "expected a date as YYYY-MM-DD, found %r" % (value,))]
     year, month, day = (int(part) for part in value.split("-"))

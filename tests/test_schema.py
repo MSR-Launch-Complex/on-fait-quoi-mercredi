@@ -81,19 +81,19 @@ class BrokenData(FixtureCase):
         self.assertRejected(COMPLETE, "tags", "not in data/tags.yml")
 
     def test_a_date_that_is_not_a_real_date(self):
-        self.edit(self.activity(COMPLETE), "verified_on: 2026-09-21", "verified_on: 2026-02-30")
+        self.edit(self.activity(COMPLETE), 'verified_on: "2026-09-21"', 'verified_on: "2026-02-30"')
         self.assertRejected(COMPLETE, "verified_on", "not a real date")
 
     def test_a_date_that_is_not_a_date_at_all(self):
-        self.edit(self.activity(COMPLETE), "source_last_seen: 2026-09-20", "source_last_seen: bientot")
+        self.edit(self.activity(COMPLETE), 'source_last_seen: "2026-09-20"', "source_last_seen: bientot")
         self.assertRejected(COMPLETE, "source_last_seen", "YYYY-MM-DD")
 
     def test_a_date_that_is_a_real_day_but_not_zero_padded(self):
-        self.edit(self.activity(COMPLETE), "verified_on: 2026-09-21", "verified_on: 2026-9-3")
+        self.edit(self.activity(COMPLETE), 'verified_on: "2026-09-21"', 'verified_on: "2026-9-3"')
         self.assertRejected(COMPLETE, "verified_on", "YYYY-MM-DD")
 
     def test_a_date_that_int_would_read_but_a_reader_would_not(self):
-        self.edit(self.activity(COMPLETE), "verified_on: 2026-09-21", "verified_on: 2026-1_0-01")
+        self.edit(self.activity(COMPLETE), 'verified_on: "2026-09-21"', 'verified_on: "2026-1_0-01"')
         self.assertRejected(COMPLETE, "verified_on", "YYYY-MM-DD")
 
     def test_an_organiser_with_no_file(self):
@@ -140,9 +140,9 @@ class BrokenData(FixtureCase):
     def test_an_event_log_out_of_order(self):
         self.edit(
             self.activity(COMPLETE),
-            "events:\n  - date: 2026-09-21\n    kind: appel\n",
-            "events:\n  - date: 2026-09-22\n    kind: appel\n"
-            "    by: bureau\n    note_fr: plus tard\n  - date: 2026-09-21\n    kind: appel\n",
+            'events:\n  - date: "2026-09-21"\n    kind: appel\n',
+            'events:\n  - date: "2026-09-22"\n    kind: appel\n'
+            '    by: bureau\n    note_fr: plus tard\n  - date: "2026-09-21"\n    kind: appel\n',
         )
         self.assertRejected(COMPLETE, "events[2].date", "oldest first")
 
@@ -150,21 +150,40 @@ class BrokenData(FixtureCase):
         """The order rule compares strings, so an unpadded date must not reach it."""
         self.edit(
             self.activity(COMPLETE),
-            "events:\n  - date: 2026-09-21\n    kind: appel\n",
-            "events:\n  - date: 2026-10-01\n    kind: appel\n"
-            "    by: bureau\n    note_fr: plus tard\n  - date: 2026-9-3\n    kind: appel\n",
+            'events:\n  - date: "2026-09-21"\n    kind: appel\n',
+            'events:\n  - date: "2026-10-01"\n    kind: appel\n'
+            '    by: bureau\n    note_fr: plus tard\n  - date: "2026-9-3"\n    kind: appel\n',
         )
         self.assertRejected(COMPLETE, "events[2].date", "YYYY-MM-DD")
 
-    def test_a_file_that_is_not_yaml_at_all(self):
-        self.write(self.activity(COMPLETE), "just some prose, not a record\n")
-        self.assertRejected(COMPLETE, "(yaml line 1)", "expected 'key: value'")
+    def test_a_date_left_unquoted(self):
+        """PyYAML hands back a date object; the schema says so and says what to type."""
+        self.edit(self.activity(COMPLETE), 'verified_on: "2026-09-21"', "verified_on: 2026-09-21")
+        self.assertRejected(COMPLETE, "verified_on", 'write "2026-09-21"')
+
+    def test_a_date_left_unquoted_that_is_not_a_real_day(self):
+        """PyYAML builds this one with datetime.date and lets the ValueError out raw."""
+        self.edit(self.activity(COMPLETE), 'verified_on: "2026-09-21"', "verified_on: 2026-02-30")
+        self.assertRejected(COMPLETE, "(yaml)", "day is out of range")
 
     def test_a_parse_failure_names_the_line_it_stopped_on(self):
         lines = self.read(self.activity(COMPLETE)).split("\n")
         lines[8] = "\t" + lines[8].lstrip()
         self.write(self.activity(COMPLETE), "\n".join(lines))
-        self.assertRejected(COMPLETE, "(yaml line 9)", "indented with a tab")
+        self.assertRejected(COMPLETE, "(yaml line 9)", "cannot start any token")
+
+    def test_a_block_scalar_whose_second_line_is_indented_less_than_its_first(self):
+        """The hand-written reader used to slice every line by the first line's indent,
+        so a line indented less than that had characters eaten off its front and the
+        record shipped shorter than the file. It is refused now, by file and line."""
+        self.edit(
+            self.activity(COMPLETE),
+            'notes_fr: "Une fiche complète, pour vérifier que chaque champ arrive sur la carte."',
+            "notes_fr: |\n    Une fiche complète,\n  repliée trop à gauche.",
+        )
+        self.assertRejected(COMPLETE, "(yaml line 11)", "expected <block end>")
+        dataset, _ = records.read(self.data)
+        self.assertEqual([activity["slug"] for activity in dataset.activities], [SPARSE])
 
     def test_a_filename_that_does_not_start_with_its_organiser(self):
         os.rename(self.activity(COMPLETE), self.activity("autre-mjc--accueil--3-11"))
@@ -190,6 +209,10 @@ class TheValidatorReportsRatherThanCrashes(FixtureCase):
 
     def test_an_activity_file_whose_top_level_is_a_sequence(self):
         self.write(self.activity(COMPLETE), "- un\n- deux\n")
+        self.assertReported("%s.yml: (file): expected a mapping of fields" % COMPLETE)
+
+    def test_an_activity_file_that_is_prose_rather_than_a_record(self):
+        self.write(self.activity(COMPLETE), "just some prose, not a record\n")
         self.assertReported("%s.yml: (file): expected a mapping of fields" % COMPLETE)
 
     def assertReported(self, fragment):

@@ -11,13 +11,20 @@ import os
 import re
 import unittest
 
+import yaml
+
 from wednesdays import build, paths, records
-from wednesdays.yaml_subset import load as load_yaml
 
 from .support import FixtureCase
 
 COMPLETE = "mjc-fixture--accueil-de-loisirs--3-11"
 SPARSE = "cirque-fixture--atelier--sans-age"
+
+
+def _read(path):
+    """A data file as the tests read it: straight from disk, not through the builder."""
+    with open(path, encoding="utf-8") as handle:
+        return yaml.safe_load(handle)
 
 
 class BuiltPage(FixtureCase):
@@ -47,7 +54,7 @@ class BuiltPage(FixtureCase):
 
     def test_a_card_carries_every_field_the_design_names(self):
         card = self._card(COMPLETE)
-        record = load_yaml(self.activity(COMPLETE))
+        record = _read(self.activity(COMPLETE))
         self.assertIn('aria-label="Accueil de loisirs"', card)  # the kind icon
         self.assertIn("<svg", card)
         self.assertIn(record["title_fr"], card)
@@ -107,7 +114,7 @@ class BuiltPage(FixtureCase):
             self.assertIn(href, self._cited_urls(), "%s is linked but not cited by any record" % href)
 
     def _card(self, slug):
-        title = load_yaml(self.activity(slug))["title_fr"]
+        title = _read(self.activity(slug))["title_fr"]
         cards = self.markup.split('<li class="card">')
         matching = [card for card in cards if ">%s</h2>" % title in card]
         self.assertEqual(len(matching), 1, "expected one card for %s" % slug)
@@ -120,7 +127,7 @@ class BuiltPage(FixtureCase):
 
 class RefusesToBuild(FixtureCase):
     def test_it_will_not_build_data_that_does_not_validate(self):
-        self.edit(self.activity(COMPLETE), "verified_on: 2026-09-21", "verified_on: hier")
+        self.edit(self.activity(COMPLETE), 'verified_on: "2026-09-21"', "verified_on: hier")
         with self.assertRaises(records.DataError) as caught:
             self._build()
         self.assertIn("verified_on", str(caught.exception.problems[0]))
@@ -149,7 +156,7 @@ class RefusesToBuild(FixtureCase):
 
 class ShippedAssets(unittest.TestCase):
     def test_every_kind_in_the_controlled_list_has_an_icon(self):
-        tags = load_yaml(paths.TAGS)
+        tags = _read(paths.TAGS)
         icons = build.load_icons(paths.ICONS, tags["kind"])
         self.assertEqual(sorted(icons), sorted(tags["kind"]))
         for kind, svg in icons.items():

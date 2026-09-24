@@ -8,11 +8,11 @@ price_note: "Tarifs calculés selon le quotient familial : demi-journée de 6 �
 address: École Le Colovry, 44 rue Centrale, Annecy
 notes_fr: "Tous les mercredis en période scolaire à l'école Le Colovry : grands jeux, activités sportives, sorties, et un parcours culturel avec les partenaires du territoire. Trois formules d'accueil : la journée, le matin seul, ou repas et après-midi. Ouverture des portes de 7h45 à 9h, fermeture de 17h à 18h15."
 source_url: https://lescarres-asso.com/project/accueil-loisirs/
-source_last_seen: 2026-09-23
-verified_on: 2026-09-23
+source_last_seen: "2026-09-23"
+verified_on: "2026-09-23"
 status: verified
 events:
-  - date: 2026-09-23
+  - date: "2026-09-23"
     kind: source
     by: bureau
     note_fr: "La page de l'accueil de loisirs indique : complet pour la saison 2026-2027."

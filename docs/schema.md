@@ -27,8 +27,8 @@ email: sou.annecy@gmail.com               # same
 booking_url: https://...                  # the enrolment page, if the source gives one
 notes_fr: "..."                           # the description, for the detail sheet (slice 6)
 source_url: http://soudesecoles-annecy.fr/les-mercredis-du-sou/   # what we read
-source_last_seen: 2026-09-23              # when we last read it
-verified_on: 2026-09-23                   # what the card shows
+source_last_seen: "2026-09-23"            # when we last read it
+verified_on: "2026-09-23"                 # what the card shows
 status: verified                          # verified | unverified
 events: []                                # the log, below. Empty is a valid answer
 ```
@@ -48,7 +48,7 @@ that the source does not say goes - a phone call, a correction, what the crawler
 
 ```yaml
 events:
-  - date: 2026-09-23
+  - date: "2026-09-23"
     kind: source          # appel | email | visite | source | correction | crawl
     by: bureau            # first names only, never anybody else's details
     note_fr: "La page indique : complet pour la saison 2026-2027."
@@ -78,17 +78,17 @@ Groups of tags: `kind` (what it is, and the card icon), `rhythm` (how often), `s
 
 ## What the YAML may look like
 
-The files are read by `wednesdays/yaml_subset.py`, a reader for the part of YAML we use:
-block mappings and sequences, flow sequences of scalars, quoted and plain scalars, `|`
-and `>` blocks, `#` comments. Anchors, tags, flow mappings and multiple documents are
-refused by name, and so is a number written with a leading zero (`0450276509`), which
-YAML 1.1 reads as octal and `int()` reads as a different number again: quote it. The
-build has no third-party imports so that it works offline on a clean checkout;
-`tests/test_yaml_subset.py` checks the reader against PyYAML over every shipped data
-file whenever PyYAML happens to be installed.
+The files are read with PyYAML's `yaml.safe_load` - whole YAML, so anything valid parses
+and a syntax error is reported against the file and the line it stopped on. Two habits
+the data keeps anyway:
 
-Dates stay text (`2026-09-23`) rather than becoming date objects, so that a date which is
-not a real date is reported against its field rather than as a parse error.
+- **Quote every date**: `verified_on: "2026-09-23"`. Unquoted, YAML 1.1 resolves it to a
+  date object and stops recording which text was typed; the event log is ordered by
+  comparing these as text. A date that arrives unquoted is refused, with the quoted form
+  to type in the message.
+- **Quote a number with a leading zero**: `phone: "0450276509"`, which YAML 1.1 would
+  otherwise be entitled to read as octal. Written the French way, in pairs
+  (`04 50 27 65 09`), it is already text.
 
 ## Known gaps against the design
 

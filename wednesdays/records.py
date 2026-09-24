@@ -10,8 +10,9 @@ from __future__ import annotations
 import os
 import unicodedata
 
+import yaml
+
 from . import paths, schema
-from .yaml_subset import YamlSubsetError, load as load_yaml
 
 
 class DataError(Exception):
@@ -99,15 +100,37 @@ def _yaml_files(directory):
 
 
 def _read_file(path):
+    """One file read, or the problem that stopped it - never a traceback."""
     try:
-        return load_yaml(path), None
-    except YamlSubsetError as error:
-        # The reader knows which line it stopped on; a problem that names only the file
-        # sends the reader back to search for it.
-        field = "(yaml)" if error.lineno is None else "(yaml line %d)" % error.lineno
-        return None, schema.Problem(_relative(path), field, error.problem)
+        with open(path, encoding="utf-8") as handle:
+            return yaml.safe_load(handle), None
+    except yaml.YAMLError as error:
+        return None, schema.Problem(_relative(path), _yaml_field(error), _yaml_message(error))
+    except ValueError as error:
+        # PyYAML resolves an unquoted 2026-02-30 by calling datetime.date and lets the
+        # ValueError out raw. Without this the validator dies on a data file instead of
+        # naming it; the schema's own date rules only see values that parsed.
+        return None, schema.Problem(_relative(path), "(yaml)", str(error))
     except OSError as error:
         return None, schema.Problem(_relative(path), "(file)", error.strerror or str(error))
+
+
+def _yaml_field(error):
+    """PyYAML knows which line it stopped on; a problem naming only the file wastes it."""
+    mark = getattr(error, "problem_mark", None)
+    if mark is None:
+        return "(yaml)"
+    return "(yaml line %d)" % (mark.line + 1)
+
+
+def _yaml_message(error):
+    problem = getattr(error, "problem", None)
+    if problem is None:
+        return str(error)
+    context = getattr(error, "context", None)
+    if context is None:
+        return problem
+    return "%s: %s" % (context, problem)
 
 
 def _reading_order(activity):

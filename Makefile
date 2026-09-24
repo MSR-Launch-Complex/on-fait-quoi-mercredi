@@ -1,5 +1,5 @@
-# The whole project's commands. `make build` needs nothing but Python 3.9+ and this
-# checkout: no install step, no network, so a clean clone can build the site offline.
+# The whole project's commands. `make build` needs Python 3.9+, PyYAML (pyproject.toml,
+# `pip install -e .`) and this checkout: no network, so a clean clone builds offline.
 
 PYTHON ?= python3
 
@@ -12,7 +12,7 @@ validate:
 	$(PYTHON) bin/validate
 
 # One entry point, and .bureau.yml's test_command: schema validation over data/, then
-# the builder and reader tests. Make stops at the first failing line, so either one
+# the schema and builder tests. Make stops at the first failing line, so either one
 # failing fails the target.
 test:
 	$(PYTHON) bin/validate

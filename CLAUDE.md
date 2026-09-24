@@ -30,7 +30,6 @@ make serve     # build, then serve site/ on localhost:8000
 | `data/organisers/<slug>.yml` | one organiser; activities reference it by slug |
 | `data/tags.yml` | the controlled tag list; `kind` also chooses the card icon |
 | `content/about_fr.md` | the À propos text, used in the footer and the page description |
-| `wednesdays/yaml_subset.py` | the YAML reader (a documented subset, stdlib only) |
 | `wednesdays/schema.py` | every rule that can stop a data file shipping |
 | `wednesdays/records.py` | reads `data/` into a dataset, or returns every problem |
 | `wednesdays/render.py`, `build.py` | the page of design §4, and writing `site/` |
@@ -38,9 +37,15 @@ make serve     # build, then serve site/ on localhost:8000
 
 ## Conventions worth knowing before you change anything
 
-- **Standard library only.** `make build` must work offline on a clean checkout, so the
-  build imports nothing third-party. That is why there is a YAML reader in here; it is
-  cross-checked against PyYAML in the tests when PyYAML is installed.
+- **One dependency, PyYAML.** Declared in `pyproject.toml` (`pip install -e .`) and used
+  through `yaml.safe_load` only. Prefer the standard library for anything else; what that
+  rule does not mean is reimplementing a standard format, which is why the hand-written
+  YAML subset reader that used to live here was pruned (Bobby, 2026-09-24).
+- **Dates in `data/` are quoted.** `verified_on: "2026-09-23"`. Unquoted, YAML hands back
+  a date object, and the event log is ordered by comparing these as text; the schema
+  refuses a date that arrives unquoted and says what to type.
+- **Offline is still the rule.** Past the install, `make build` reaches nothing, and the
+  page it writes makes no external request.
 - **Absence is a value.** No field is invented to fill a card. If a source does not give
   an age range, a price, or whether it is morning or afternoon, the field is absent and
   the card says "non précisé par la source". Do not add defaults.

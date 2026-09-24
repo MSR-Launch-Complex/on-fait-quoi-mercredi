@@ -21,17 +21,18 @@ the detail sheet and the correction form belong to later slices.
 ## Build it
 
 ```sh
-make build     # data/ + content/ -> site/index.html
-make serve     # the same, then http://localhost:8000
+pip install -e .   # once: Python 3.9 or newer, and PyYAML, which is the one dependency
+make build         # data/ + content/ -> site/index.html
+make serve         # the same, then http://localhost:8000
 ```
 
-Python 3.9 or newer, and nothing else: no install step, no dependencies, no network. A
-clean clone builds the site offline.
+PyYAML reads `data/`; it is declared in `pyproject.toml` and is the whole install. The
+build itself asks nothing of the network, and neither does the page it writes.
 
 ## Test it
 
 ```sh
-make test      # schema validation over data/, then the reader and builder tests
+make test      # schema validation over data/, then the schema and builder tests
 ```
 
 `make test` is the single entry point and what `.bureau.yml` declares as `test_command`.
@@ -69,7 +70,8 @@ Source: GitHub Actions**.
 | `data/activities/`, `data/organisers/`, `data/tags.yml` | the data; git is the database |
 | `content/about_fr.md` | the À propos text: the footer and the page description, one copy |
 | `assets/` | the stylesheet and one card icon per kind, both inlined into the page |
-| `wednesdays/` | the YAML reader, the schema, the renderer, the builder |
+| `wednesdays/` | the reader, the schema, the renderer, the builder |
+| `pyproject.toml` | the one dependency, PyYAML |
 | `bin/build`, `bin/validate` | the two entry points the Makefile calls |
 | `tests/` | run by `make test` |
 | `docs/` | the design (`docs/design/DESIGN.md`) and the record shape (`docs/schema.md`) |
