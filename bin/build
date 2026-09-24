@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build site/ from data/ and content/. No network, no dependencies."""
+"""Build site/ from data/ and content/. No network; PyYAML reads the data files."""
 
 import os
 import sys

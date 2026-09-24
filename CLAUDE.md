@@ -15,8 +15,8 @@ Read in this order:
 ## The commands
 
 ```sh
-make build     # data/ + content/ -> site/index.html. Offline, no dependencies
-make test      # schema validation over data/, then the reader and builder tests
+make build     # data/ + content/ -> site/index.html. Offline; needs PyYAML installed
+make test      # schema validation over data/, then the schema and builder tests
 make serve     # build, then serve site/ on localhost:8000
 ```
 
