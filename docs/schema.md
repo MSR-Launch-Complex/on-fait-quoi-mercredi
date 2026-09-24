@@ -78,9 +78,9 @@ Groups of tags: `kind` (what it is, and the card icon), `rhythm` (how often), `s
 
 ## What the YAML may look like
 
-The files are read with PyYAML's `yaml.safe_load` - whole YAML, so anything valid parses
-and a syntax error is reported against the file and the line it stopped on. Two habits
-the data keeps anyway:
+The files are read with PyYAML, safe loading only - whole YAML, so anything valid parses
+and a syntax error is reported against the file and the line it stopped on. Three rules
+the reader keeps on top of that:
 
 - **Quote every date**: `verified_on: "2026-09-23"`. Unquoted, YAML 1.1 resolves it to a
   date object and stops recording which text was typed; the event log is ordered by
