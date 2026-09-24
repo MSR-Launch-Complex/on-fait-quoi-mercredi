@@ -1,0 +1,11 @@
+# The counterpart record: the source states neither age, nor moment, nor price, and the
+# event log is empty. Nothing here may be filled in with a plausible value.
+title_fr: Atelier cirque
+organiser: cirque-fixture
+commune: Seynod
+tags: [cirque]
+source_url: https://example.invalid/cirque/atelier
+source_last_seen: "2026-09-20"
+verified_on: "2026-09-20"
+status: unverified
+events: []

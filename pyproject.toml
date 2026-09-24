@@ -1,0 +1,17 @@
+# The project's one dependency, declared so a clean checkout can install it in one
+# command. PyYAML reads data/ (Bobby's ruling, 2026-09-24: "of course pyyaml is fine as
+# a dependency" - prefer-the-standard-library does not mean reimplement YAML). The
+# floor is 6.0 for `yaml.safe_load` as used here; CI pins the exact release.
+[project]
+name = "wednesdays"
+version = "0.1.0"
+description = "On fait quoi mercredi ? - the Wednesday activities of the Annecy area, as a static site"
+requires-python = ">=3.9"
+dependencies = ["PyYAML>=6.0,<7"]
+
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["wednesdays"]

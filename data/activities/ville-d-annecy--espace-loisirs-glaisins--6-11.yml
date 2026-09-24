@@ -1,0 +1,19 @@
+# The cited page renders in the browser and serves nothing to a plain fetch; the same
+# text, this centre's own Tél and Email lines included, is served as JSON at
+# https://www.annecy.fr/api/quotidien/jeunesse/centres-de-loisirs (checked 2026-09-23).
+title_fr: Centre de loisirs L'Espace loisirs
+organiser: ville-d-annecy
+commune: Annecy-le-Vieux
+ages: [6, 11]
+tags: [accueil_de_loisirs, tous_les_mercredis]
+price_note: "Tarifs indicatifs des accueils de loisirs municipaux, repas inclus : de 12 € à 36 €, 39,60 € pour les familles extérieures."
+address: Sports Espace Glaisins, 6 rue de la Frasse, Annecy-le-Vieux, 74940 Annecy
+phone: 06 65 62 43 37
+email: espaceloisirs@annecy.fr
+booking_url: https://www.espace-citoyens.net/annecy-familles/espace-citoyens/Activites/IndexInfosPratiquesPubliques
+notes_fr: "Centre de loisirs municipal des Glaisins, ouvert les mercredis et pendant les vacances scolaires, sauf les vacances de Noël et du nouvel an et tout le mois d'août. Inscription en ligne sur le portail familles ou aux accueils de proximité."
+source_url: https://www.annecy.fr/quotidien/jeunesse/centres-de-loisirs
+source_last_seen: "2026-09-23"
+verified_on: "2026-09-23"
+status: verified
+events: []
