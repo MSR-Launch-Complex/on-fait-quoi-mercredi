@@ -167,6 +167,15 @@ class BrokenData(FixtureCase):
         self.edit(self.activity(COMPLETE), 'verified_on: "2026-09-21"', "verified_on: 2026-02-30")
         self.assertRejected(COMPLETE, "(yaml)", "day is out of range")
 
+    def test_a_field_given_twice(self):
+        """PyYAML would keep the last value and say nothing; the wrong date would ship."""
+        self.edit(
+            self.activity(COMPLETE),
+            'verified_on: "2026-09-21"',
+            'verified_on: "2026-09-21"\nverified_on: "2019-01-01"',
+        )
+        self.assertRejected(COMPLETE, "(yaml line 13)", "'verified_on' is given twice")
+
     def test_a_parse_failure_names_the_line_it_stopped_on(self):
         lines = self.read(self.activity(COMPLETE)).split("\n")
         lines[8] = "\t" + lines[8].lstrip()

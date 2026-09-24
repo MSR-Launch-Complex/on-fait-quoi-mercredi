@@ -15,6 +15,26 @@ import yaml
 from . import paths, schema
 
 
+class _Loader(yaml.SafeLoader):
+    """`yaml.safe_load` - still safe, nothing here widens what it will construct - minus
+    one silence: PyYAML lets a key be given twice and keeps the last value. A record with
+    two verified_on lines is a person disagreeing with themselves, and picking one of the
+    two quietly is how the wrong date ships. The reader this replaced said so by name.
+    """
+
+    def construct_mapping(self, node, deep=False):
+        seen = set()
+        for key_node, _ in node.value:
+            key = self.construct_object(key_node, deep=deep)
+            if key in seen:
+                raise yaml.constructor.ConstructorError(
+                    "while reading a mapping", node.start_mark,
+                    "the key %r is given twice" % (key,), key_node.start_mark
+                )
+            seen.add(key)
+        return super(_Loader, self).construct_mapping(node, deep=deep)
+
+
 class DataError(Exception):
     """The data does not validate. `problems` holds every reason, not just the first."""
 
@@ -103,7 +123,7 @@ def _read_file(path):
     """One file read, or the problem that stopped it - never a traceback."""
     try:
         with open(path, encoding="utf-8") as handle:
-            return yaml.safe_load(handle), None
+            return yaml.load(handle, _Loader), None
     except yaml.YAMLError as error:
         return None, schema.Problem(_relative(path), _yaml_field(error), _yaml_message(error))
     except ValueError as error:

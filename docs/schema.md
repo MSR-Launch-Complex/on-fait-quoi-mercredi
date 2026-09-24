@@ -86,6 +86,8 @@ the data keeps anyway:
   date object and stops recording which text was typed; the event log is ordered by
   comparing these as text. A date that arrives unquoted is refused, with the quoted form
   to type in the message.
+- **Say each field once.** PyYAML would keep the last of two `verified_on` lines and
+  say nothing; the reader refuses the file instead, naming the repeated key and its line.
 - **Quote a number with a leading zero**: `phone: "0450276509"`, which YAML 1.1 would
   otherwise be entitled to read as octal. Written the French way, in pairs
   (`04 50 27 65 09`), it is already text.
